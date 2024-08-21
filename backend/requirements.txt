@@ -12,7 +12,7 @@ flask-restx==0.5.1
 python-dotenv==0.19.2
 Flask-Minify==0.37
 textblob==0.17.1
-#pandas==2.2.2
+pandas==2.2.2
 requests==2.32.3
 botometer==2.0.1
 flask-bcrypt==1.0.1
