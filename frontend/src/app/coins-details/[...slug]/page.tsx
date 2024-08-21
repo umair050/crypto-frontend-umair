@@ -193,7 +193,7 @@ const Page: React.FC<PageProps> = async ({ params }) => {
   }
   let response,data,tableData,monthlyPrices,yearlyPrices;
   try {
-    response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND}coin-details/${coin}`, { headers: { "Authorization": `Bearer ${access.value}` } });
+    response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND}/coin-details/${coin}`, { headers: { "Authorization": `Bearer ${access.value}` } });
     data = response.data
     if (data === null || (data && data.error)) {
       return <p>No data found for the coin: {coin}.</p>;
