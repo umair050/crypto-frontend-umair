@@ -14,7 +14,7 @@
   ],
   
   "functions": {
-    "*": {
+    "run.py": {
       "maxDuration": 60
     }
   }
