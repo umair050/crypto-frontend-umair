@@ -12,11 +12,5 @@
       "dest": "run.py"
     }
   ],
-  
-  "functions": {
-    "run.py": {
-      "maxDuration": 60
-    }
-  }
 }
 
