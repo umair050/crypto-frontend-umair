@@ -28,8 +28,9 @@ def register():
     if not username or not password:
         return jsonify({'message': 'Missing username or password'}), 400
 
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    new_user = User(username=username, password=bcrypt.generate_password_hash(password))
+    new_user = User(username=username, password=hashed_password)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'Registeration sucessful'}), 200
