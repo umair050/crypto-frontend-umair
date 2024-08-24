@@ -6,8 +6,14 @@
       "use": "@vercel/python"
     }
   ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "run.py"
+    }
+  ],
   "functions": {
-    "apps/home/routes.py": {
+    "*": {
       "maxDuration": 60
     }
   }
