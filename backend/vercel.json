@@ -1,21 +1,29 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "run.py",
-        "use": "@vercel/python"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "run.py"
-      }
-    ],
-    "functions": {
-    "run.py": {
+  "version": 2,
+  "builds": [
+    {
+      "src": "run.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "apps/home/routes.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/home/updatecoins",
+      "dest": "apps/home/routes.py",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/(.*)",
+      "dest": "run.py"
+    }
+  ],
+  "functions": {
+    "apps/home/routes.py": {
       "maxDuration": 60
     }
   }
-  }
-  
+}
