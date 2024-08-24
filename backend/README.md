@@ -148,3 +148,5 @@ The project is coded using blueprints, app factory pattern, dual configuration p
 ```
 
 <br />
+
+test
