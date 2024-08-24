@@ -12,11 +12,6 @@
   ],
   "routes": [
     {
-      "src": "/home/updatecoins",
-      "dest": "apps/home/routes.py",
-      "methods": ["GET"]
-    },
-    {
       "src": "/(.*)",
       "dest": "run.py"
     }
