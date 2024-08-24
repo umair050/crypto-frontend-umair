@@ -11,7 +11,7 @@ from apps.home.data_collector import *
 
 import datetime
 
-# WARNING: Don't run with debug turned on in production!
+# WARNING: Don't run with debug turned on in production!test
 DEBUG = False#(os.getenv('DEBUG', 'False') == 'True')
 
 # The configuration
