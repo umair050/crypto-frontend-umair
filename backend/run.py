@@ -10,6 +10,8 @@ from flask_apscheduler import APScheduler
 from apps.home.data_collector import *
 
 import datetime
+
+# WARNING: Don't run with debug turned on in production!
 DEBUG = False#(os.getenv('DEBUG', 'False') == 'True')
 
 # The configuration
