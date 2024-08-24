@@ -14,7 +14,7 @@
   ],
   "crons": [
     {
-      "path": "/home/updatecoins",
+      "path": "/homet/updatecoins",
       "schedule": "* * * * *"
     }
   ]
