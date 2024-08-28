@@ -35,6 +35,10 @@ def register():
     db.session.commit()
     return jsonify({'message': 'Registeration sucessful'}), 200
 
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'Registeration sucessful'}), 200
+
 @blueprint.route('/login', methods=['POST'])
 def login():
     users_count = User.query.count()
@@ -83,7 +87,7 @@ def analysis():
     
     
     coin_data = CoinData.query.all()
-    print(coin_data[0].to_dict())
+    # print(coin_data[0].to_dict())
     
     return jsonify({'coin_data':[i.to_dict() for i in coin_data]})
 
@@ -165,13 +169,11 @@ def update2():
 @jwt_required()
 def get_coin_details(coin_symbol):
 
-    print('coin_symbol',coin_symbol)
-
     coin_data = get_coin_data(coin_symbol)
     dates, prices, volume_dates,volume_from, volume_to,adoption_rates = get_historical_data(coin_symbol.capitalize())
     tweets_data = get_tweets_data(coin_symbol)
     
-    print('coin_data',coin_data,'dates',dates,'prices',prices,'tweets_data',tweets_data)
+    # print('coin_data',coin_data,'dates',dates,'prices',prices,'tweets_data',tweets_data)
     if not tweets_data:
         tweets_data = []
     if coin_data and dates and prices:
@@ -185,6 +187,7 @@ def get_coin_details(coin_symbol):
                 'one_month_prediction': coin_data.one_month_prediction,
                 'one_year_prediction': coin_data.one_year_prediction,
                 'bot_ratio': coin_data.bot_ratio,
+                'created_at' : coin_data.created_at,
                 'dates' : dates,
                 'prices' : prices,
                 'volume_dates' : volume_dates,
