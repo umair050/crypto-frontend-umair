@@ -47,7 +47,7 @@ def connect_to_endpoint(url, params=None):
     print(url)
     response = requests.get(url, headers=headers, params=params)
 
-    print('line 51',response)
+    print('line 51',response,bearer_token)
 
     if response.status_code != 200:
         raise Exception(
