@@ -47,7 +47,7 @@ def connect_to_endpoint(url, params=None):
     print(url)
     response = requests.get(url, headers=headers, params=params)
 
-    print('line 51',response,bearer_token)
+    print('line 51',response)
 
     if response.status_code != 200:
         raise Exception(
@@ -365,14 +365,23 @@ def collect_coin_data(coins):
                     one_month_pred = 0
                     one_year_pred = 0
 
-                    print(prices)
                     if (prices.get(coin.upper())):
+                        
                         parameters = {
                             "model": "meta-llama/Meta-Llama-3-8B-Instruct",
-                            'messages':[{"role": "user", "content":
-                            "Here are the engagement scores for tweets of a cryptocurrency. Positive scores mean the sentiment towards the currency is positive. The higher the score, the larger the chance for increase in price for that coin. Negative scores are the opposite. They represent the chance for the prices to go down. The scores are:\n" + ",".join(engagement_scores) +
-                            "\nNow, if the current price of the coin is $" + str(prices[coin.upper()]) + " right now, what do you think the price will be in 1 month? Only answer with the final price in dollars after the part where it says 'Sure the price will be:', do not write anything else.\nSure, the price will be:"}]
+                            'messages': [{
+                                "role": "user",
+                                "content": (
+                                    "Here are the engagement scores for tweets of a cryptocurrency. Positive scores mean the sentiment towards the currency is positive. "
+                                    "The higher the score, the larger the chance for an increase in the price of that coin. Negative scores are the opposite; they represent the chance for prices to go down. "
+                                    "The scores are:\n" + ",".join(engagement_scores) +
+                                    "\nNow, if the current price of the coin is $" + str(prices[coin.upper()]) +
+                                    " right now, what do you think the prices will be over the next year? Please provide 12 data points representing the predicted price at the end of each month. "
+                                    "Only answer with the list of these predicted data points as plain numbers, separated by commas. Do not include any additional text.\n"
+                                )
+                            }]
                         }
+
 
                         headers = {
                             "Content-Type": "application/json",
@@ -380,19 +389,29 @@ def collect_coin_data(coins):
                         }
                         response = requests.post(openai_like_api_url, headers=headers, json=parameters)
                         data2 = json.loads(response.text)
-                        print(data2)
-                        llm_result = find_first_float(data2['choices'][0]['message']['content'])
+                        llm_result = data2['choices'][0]['message']['content']
+                        # Split the string by commas, remove the dollar signs, and convert each to a float
+                        monthly_values = [float(value.strip().replace('$', '')) for value in llm_result.split(',')]
 
+                        # Print the resulting list of floats
                         if (llm_result):
-                            one_month_pred = llm_result
+                            one_month_pred = monthly_values
                         else:
-                            one_month_pred = prices[coin.upper()]
+                            one_month_pred = [prices[coin.upper()]]
 
                         parameters = {
                             "model": "meta-llama/Meta-Llama-3-8B-Instruct",
-                            'messages':[{"role": "user", "content":
-                            "Here are the engagement scores for tweets of a cryptocurrency. Positive scores mean the sentiment towards the currency is positive. The higher the score, the larger the chance for increase in price for that coin. Negative scores are the opposite. They represent the chance for the prices to go down. The scores are:\n" + ",".join(engagement_scores) +
-                            "\nNow, if the current price of the coin is $" + str(prices[coin.upper()]) + " right now, what do you think the price will be in 12 months? Only answer with the final price in dollars after the part where it says 'Sure the price will be:', do not write anything else.\nSure, the price will be:"}]
+                            'messages': [{
+                                "role": "user",
+                                "content": (
+                                    "Here are the engagement scores for tweets of a cryptocurrency. Positive scores mean the sentiment towards the currency is positive. "
+                                    "The higher the score, the larger the chance for an increase in the price of that coin. Negative scores are the opposite; they represent the chance for prices to go down. "
+                                    "The scores are:\n" + ",".join(engagement_scores) +
+                                    "\nNow, if the current price of the coin is $" + str(prices[coin.upper()]) +
+                                    " right now, what do you think the prices will be over the next 5 years? Please provide 5 data points representing the predicted price at the end of each year. "
+                                    "Only answer with the list of these predicted data points as plain numbers, separated by commas. Do not include any additional text.\n"
+                                )
+                            }]
                         }
 
                         headers = {
@@ -404,13 +423,16 @@ def collect_coin_data(coins):
 
                         data2 = json.loads(response.text)
 
-                        print(data2)
-                        llm_result = find_first_float(data2['choices'][0]['message']['content'])
+                        llm_result = data2['choices'][0]['message']['content']
+                        # Split the string by commas, remove the dollar signs, and convert each to a float
+                        yearly_values = [float(value.strip().replace('$', '')) for value in llm_result.split(',')]
 
+                        # Print the resulting list of floats
+                        print(yearly_values)
                         if (llm_result):
-                            one_year_pred = llm_result
+                            one_year_pred = yearly_values
                         else:
-                            one_year_pred = prices[coin.upper()]
+                            one_year_pred = [prices[coin.upper()]]
 
                     data.append({
                         'coin': coin,
@@ -435,13 +457,17 @@ def update_data():
     global max_observed_score
     # Fetch all coins from the database
     coins_query = Coins.query.with_entities(Coins.coin).all()
+
+    print('coins_query',coins_query)
    
     # Extract the coin names from the query result
     new_coins = [coin[0] for coin in coins_query]    
     # new_coins = ['btc']
     # To make sure we save stuff before they end
     for specific_coin in new_coins:
-        coin_data_list = collect_coin_data([specific_coin])    
+        coin_data_list = collect_coin_data([specific_coin])  
+        # coin_data_list = [{'coin': 'btc', 'mentions': 10, 'market_cap': 1162712168003.6943, 'virality_score': 18.8, 'sentiment_proportions': 'Neutral sentiment', 'hype_to_market_cap': 8.600580844672323e-12, 'one_month_pred': [58882.61, 59137.81, 59393.01, 59648.21, 59903.41, 60158.61, 60313.81, 60669.01, 60824.21, 61179.41, 61534.61, 61889.81], 'one_year_pred': [58745.34, 59031.81, 59318.28, 59605.75, 59893.22], 'bot_ratio': 0.7, 'engagement_coefficient': np.float64(8.892961083167894e-05)}]
+        
         print('coin_data_list' , coin_data_list)    
         if (len(coin_data_list)):
             coin_data_list_handles = [i['coin'] for i in coin_data_list]
@@ -450,21 +476,32 @@ def update_data():
                 max_observed_score = 1
             # Only delete those we have new data about
             db.session.query(CoinData).filter(CoinData.coin.in_([specific_coin])).delete()
-            for coin_data in coin_data_list:
-                coin_data_obj = CoinData(
-                    coin=coin_data['coin'],
-                    mentions=coin_data['mentions'],
-                    market_cap=coin_data['market_cap'],
-                    sentiment_score=coin_data['sentiment_proportions'],
-                    virality_score=coin_data['virality_score'] / max_observed_score,
-                    hype_to_market_cap=coin_data['hype_to_market_cap'],
-                    one_month_prediction=coin_data['one_month_pred'],
-                    one_year_prediction=coin_data['one_year_pred'],
-                    bot_ratio=coin_data['bot_ratio'],
-                    engagement_coefficient= coin_data['engagement_coefficient']
-                )
-                db.session.add(coin_data_obj)
-            db.session.commit()
+
+            try:
+                # Optional: Uncomment if you need to delete existing records
+                db.session.query(CoinData).filter(CoinData.coin.in_([specific_coin])).delete()
+                
+                for coin_data in coin_data_list:
+                    coin_data_obj = CoinData(
+                        coin=coin_data['coin'],
+                        mentions=coin_data['mentions'],
+                        market_cap=coin_data['market_cap'],
+                        sentiment_score=coin_data['sentiment_proportions'],
+                        virality_score=coin_data['virality_score'] / max_observed_score,
+                        hype_to_market_cap=coin_data['hype_to_market_cap'],
+                        one_month_prediction=coin_data['one_month_pred'],
+                        one_year_prediction=coin_data['one_year_pred'],
+                        bot_ratio=coin_data['bot_ratio'],
+                        engagement_coefficient=str(coin_data['engagement_coefficient'])
+                    )
+                    db.session.add(coin_data_obj)
+                
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error during commit: {e}")
+                raise
+
 
 
 def get_coin_data(specific_coin):
