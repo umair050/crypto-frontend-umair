@@ -605,7 +605,8 @@ def get_new_listings():
     db.session.commit()
 
     return all_symbols
-  
+
+
 
 
 
