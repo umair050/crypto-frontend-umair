@@ -169,7 +169,7 @@ def get_coin_prices(coinshandles):
     }
 
     response = requests.get(url, headers=headers, params=parameters)
-
+    print('172',response)
     # Parse the JSON response
     data = json.loads(response.text)
 
@@ -277,7 +277,7 @@ def collect_coin_data(coins):
         print("No coins found this time")
         return []
     prices = get_coin_prices(coins)
-
+    print('prices',prices)
     for coin in coins:
         print("Processing coin:", coin)
         try:
