@@ -198,4 +198,5 @@ def get_coin_details(coin_symbol):
         }), 200
     else:
         return jsonify({'error': 'No data found for the specified coin.'}), 404
+        
    
