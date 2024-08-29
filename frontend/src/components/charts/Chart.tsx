@@ -81,7 +81,7 @@ const LineChart: React.FC<{ dates: any, prices: any }> = ({ dates, prices }) => 
                     <Line data={data} options={options} />
                 </div>
             </div>
-            <div className="pagination-controls">
+{/*             <div className="pagination-controls">
                 <button
                     onClick={() => setPage(page - 1)}
                     disabled={page === 0}
@@ -97,7 +97,7 @@ const LineChart: React.FC<{ dates: any, prices: any }> = ({ dates, prices }) => 
                 >
                     <span className="chevron right"></span>
                 </button>
-            </div>
+            </div> */}
             <style jsx>{`
                 .chart-container {
                     position: relative;
