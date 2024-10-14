@@ -52,7 +52,17 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    subscription_status = db.Column(db.String(20), nullable=False, default='inactive')
+    stripe_subscription_id = db.Column(db.String(100), nullable=True)
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'subscription_status': self.subscription_status,
+            'stripe_subscription_id': self.stripe_subscription_id,
+        }
+    
     def __repr__(self):
         return f'<User {self.username}>'
 
