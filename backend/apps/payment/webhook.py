@@ -3,13 +3,14 @@ from payment.models import User
 from app import db
 import stripe
 from config import Config
+from apps.payment import blueprint
 
 stripe.api_key = Config.STRIPE_SECRET_KEY
 endpoint_secret = Config.STRIPE_WEBHOOK_SECRET
 
-webhook_bp = Blueprint('webhook', __name__)
+ 
 
-@webhook_bp.route('/webhook', methods=['POST'])
+@blueprint.route('/webhook', methods=['POST'])
 def webhook():
     payload = request.data
     sig_header = request.headers.get('STRIPE_SIGNATURE')
