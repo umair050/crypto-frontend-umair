@@ -1,41 +1,67 @@
+import os
+
 from flask import Blueprint, jsonify, request
-from payment.models import User
-from app import db
 import stripe
-from config import Config
+from stripe.error import SignatureVerificationError
 
-stripe.api_key = Config.STRIPE_SECRET_KEY
+from apps import db
+from apps.home.models import User
 
-payment_bp = Blueprint('payment', __name__)
+# from stripe.error import SignatureVerificationError
 
-@payment_bp.route('/create-subscription', methods=['POST'])
-def create_subscription():
-    data = request.json
-    email = data.get('email')
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
 
-    # Create Stripe customer
-    customer = stripe.Customer.create(
-        email=email,
-        name=data.get('name')
-    )
+blueprint = Blueprint('payment', __name__)
 
-    # Create Stripe subscription
-    subscription = stripe.Subscription.create(
-        customer=customer.id,
-        items=[{'price': 'your_stripe_price_id'}],  # Replace with your price ID
-        expand=['latest_invoice.payment_intent']
-    )
 
-    # Store user and subscription in database
-    new_user = User(email=email, stripe_subscription_id=subscription['id'], subscription_status='active')
-    db.session.add(new_user)
-    db.session.commit()
+@blueprint.route('/webhook', methods=['POST'])
+def webhook():
+    payload = request.data
+    sig_header = request.headers.get('STRIPE_SIGNATURE')
+    print(payload)
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError as e:
+        print(f"ValueError: {str(e)}")  # Debug output
+        return jsonify({'error': 'Invalid payload'}), 400
+    except SignatureVerificationError as e:
+        print(f"SignatureVerificationError: {str(e)}")  # Debug output
+        return jsonify({'error': 'Invalid signature'}), 400
+    except Exception as e:
+        print(f"Unhandled exception: {str(e)}")  # Catch other exceptions
+        return jsonify({'error': 'An error occurred'}), 500
 
-    return jsonify({'subscription_id': subscription['id'], 'status': 'active'})
+    # Handle subscription events
+    if event['type'] == 'customer.subscription.created':
+        subscription = event['data']['object']
+        handle_subscription_created(subscription)
+    elif event['type'] == 'customer.subscription.updated':
+        subscription = event['data']['object']
+        handle_subscription_updated(subscription)
+    elif event['type'] == 'customer.subscription.deleted':
+        subscription = event['data']['object']
+        handle_subscription_canceled(subscription)
 
-@payment_bp.route('/user/<int:user_id>/subscription-status', methods=['GET'])
-def get_subscription_status(user_id):
-    user = User.query.get(user_id)
+    return jsonify(success=True)
+
+
+def handle_subscription_created(subscription):
+    user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
     if user:
-        return jsonify({'email': user.email, 'status': user.subscription_status})
-    return jsonify({'error': 'User not found'}), 404
+        user.subscription_status = 'active'
+        db.session.commit()
+
+
+def handle_subscription_updated(subscription):
+    user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
+    if user:
+        user.subscription_status = 'active' if subscription['status'] == 'active' else 'past_due'
+        db.session.commit()
+
+
+def handle_subscription_canceled(subscription):
+    user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
+    if user:
+        user.subscription_status = 'canceled'
+        db.session.commit()
