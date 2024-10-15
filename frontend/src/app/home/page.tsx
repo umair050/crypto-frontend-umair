@@ -8,7 +8,7 @@ import Testimonials from '@/views/HomePage/Testimonials';
 import ScrollableBlogPosts from '@/views/HomePage/ScrollableBlogPosts';
 import Hero from '@/views/HomePage/Hero'; 
 import Partners from '@/views/HomePage/Partners'; 
-import { EnvVars } from '../../env';
+import { EnvVars } from '../../../env';
 import Cta from '@/views/HomePage/Cta';
 import FeaturesGallery from '@/views/HomePage/FeaturesGallery';
 import Features from '@/views/HomePage/Features';
