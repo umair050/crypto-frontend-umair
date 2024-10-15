@@ -1,26 +1,37 @@
+import os
+
 from flask import Blueprint, jsonify, request
-from payment.models import User
-from app import db
 import stripe
-from config import Config
-from apps.payment import blueprint
+from stripe.error import SignatureVerificationError
 
-stripe.api_key = Config.STRIPE_SECRET_KEY
-endpoint_secret = Config.STRIPE_WEBHOOK_SECRET
+from apps import db
+from apps.home.models import User
 
- 
+# from stripe.error import SignatureVerificationError
+
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+blueprint = Blueprint('payment', __name__)
+
 
 @blueprint.route('/webhook', methods=['POST'])
 def webhook():
     payload = request.data
     sig_header = request.headers.get('STRIPE_SIGNATURE')
-
+    print(payload)
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except ValueError:
+        print(f"Received event: {event['type']}")  # Debug output
+    except ValueError as e:
+        print(f"ValueError: {str(e)}")  # Debug output
         return jsonify({'error': 'Invalid payload'}), 400
-    except stripe.error.SignatureVerificationError:
+    except SignatureVerificationError as e:
+        print(f"SignatureVerificationError: {str(e)}")  # Debug output
         return jsonify({'error': 'Invalid signature'}), 400
+    except Exception as e:
+        print(f"Unhandled exception: {str(e)}")  # Catch other exceptions
+        return jsonify({'error': 'An error occurred'}), 500
 
     # Handle subscription events
     if event['type'] == 'customer.subscription.created':
@@ -32,8 +43,9 @@ def webhook():
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
         handle_subscription_canceled(subscription)
-    
+
     return jsonify(success=True)
+
 
 def handle_subscription_created(subscription):
     user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
@@ -41,11 +53,13 @@ def handle_subscription_created(subscription):
         user.subscription_status = 'active'
         db.session.commit()
 
+
 def handle_subscription_updated(subscription):
     user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
     if user:
         user.subscription_status = 'active' if subscription['status'] == 'active' else 'past_due'
         db.session.commit()
+
 
 def handle_subscription_canceled(subscription):
     user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
