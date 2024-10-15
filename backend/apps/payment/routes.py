@@ -22,6 +22,7 @@ def webhook():
     print(payload)
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+        print(f"Received event: {event['type']}")  # Debug output
     except ValueError as e:
         print(f"ValueError: {str(e)}")  # Debug output
         return jsonify({'error': 'Invalid payload'}), 400
