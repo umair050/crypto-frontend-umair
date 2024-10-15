@@ -1,5 +1,4 @@
 import os
-
 from flask import Blueprint, jsonify, request
 import stripe
 from stripe.error import SignatureVerificationError
@@ -7,19 +6,20 @@ from stripe.error import SignatureVerificationError
 from apps import db
 from apps.home.models import User
 
-# from stripe.error import SignatureVerificationError
-
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
 
 blueprint = Blueprint('payment', __name__)
 
-
 @blueprint.route('/webhook', methods=['POST'])
 def webhook():
     payload = request.data
     sig_header = request.headers.get('STRIPE_SIGNATURE')
-    print(payload)
+
+    # Debugging outputs
+    print(f"Payload: {payload.decode('utf-8')}")
+    print(f"Signature Header: {sig_header}")
+
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
         print(f"Received event: {event['type']}")  # Debug output
@@ -43,9 +43,10 @@ def webhook():
     elif event['type'] == 'customer.subscription.deleted':
         subscription = event['data']['object']
         handle_subscription_canceled(subscription)
+    else:
+        print(f"Unhandled event type: {event['type']}")
 
     return jsonify(success=True)
-
 
 def handle_subscription_created(subscription):
     user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
@@ -53,13 +54,11 @@ def handle_subscription_created(subscription):
         user.subscription_status = 'active'
         db.session.commit()
 
-
 def handle_subscription_updated(subscription):
     user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
     if user:
         user.subscription_status = 'active' if subscription['status'] == 'active' else 'past_due'
         db.session.commit()
-
 
 def handle_subscription_canceled(subscription):
     user = User.query.filter_by(stripe_subscription_id=subscription['id']).first()
