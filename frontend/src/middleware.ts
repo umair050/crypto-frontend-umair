@@ -21,14 +21,15 @@ export function middleware(request: NextRequest) {
     const cookies = parse(request.headers.get('cookie') || '');
 
     console.log("cookies", cookies.user);
-    console.log(cookies.user);
-    
+    console.log(cookies.user); 
     // const accessToken = cookies.access; // Retrieve access token from cookies
     const user = cookies.user ? JSON.parse(cookies.user) : null; // Parse user data from cookies
      // Check subscription status
      if (user?.subscription_status === 'inactive') {
       // Redirect to pricing page if the account is inactive
-      return NextResponse.redirect(new URL('/pricing', request.url));
+      const url = request.nextUrl.clone();
+      url.pathname = '/pricing';
+      return NextResponse.redirect(url);
     }
   }
 

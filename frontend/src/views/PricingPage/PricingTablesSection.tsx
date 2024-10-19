@@ -1,3 +1,4 @@
+"use client";
 // PricingTablesSection.tsx
 import React from 'react';
 import styled from 'styled-components';
@@ -16,52 +17,58 @@ export default function PricingTablesSection() {
     return null;
   };
 
-  const getAccessToken = getCookie('access');
 
+  const PREMIUM_PLAN_ID = process.env.NEXT_PUBLIC_PREMIUM_PLAN_ID;
+  const ENTERPRISE_PLAN_ID = process.env.NEXT_PUBLIC_ENTERPRISE_PLAN_ID;
+  const PROFESSIONAL_PLAN_ID = process.env.NEXT_PUBLIC_PROFESSIONAL_PLAN_ID;
+  
 
-
-  console.log('Access Token 123:', getAccessToken);
+  // console.log('Access Token 123:', getAccessToken);
   const pricingPlans = [
     {
       title: 'Professional Plan',
       description: 'Give us a try for free',
-      benefits: ['1 seat', '1 active project', 'Unlimited viewers', '10 blocks'],
+      benefits: [
+        'Core data sets',
+        'Sentiment analysis',
+        'Real-time alerts',
+        'Customizable dashboard'
+        
+      ],
       price: '$299.00',
       isOutlined: false,
-      paymentUrl: 'https://buy.stripe.com/test_dR6cOc4vu1pt5xe7su?prefilled_email=malikumair112233%40gmail.com&client_reference_id=123'
+      priceId:PROFESSIONAL_PLAN_ID || ''
     },
     {
       title: 'Premium Plan',
       description: 'Best for individual designers',
       benefits: [
-        '1 seat',
-        '3 active projects',
-        'Unlimited viewers',
-        '100 blocks',
-        'CSV Downloader',
-        'Password protection',
+        'Premium data sets',
+        'Advanced analytics',
+        'Predictive modeling',
+        'API integration'
       ],
       price: '$599.00',
       isOutlined: true,
-      paymentUrl: 'https://buy.stripe.com/test_dR6cOc4vu1pt5xe7su?prefilled_email=malikumair112233%40gmail.com&client_reference_id=123'
+      priceId:PREMIUM_PLAN_ID || ''
     },
     {
       title: 'Enterprise Plan',
       description: 'Get your team together',
       benefits: [
-        '10 seats',
-        '10 active projects',
-        'Unlimited viewers',
-        'Unlimited blocks',
-        'CSV Downloader',
-        'Password protection',
-        'Customization',
+        'Unlimited data access',
+        'Bespoke solutions',
+        'Premium support & deployment',
+        'Tailored onboarding'
       ],
       price: '$999.00',
       isOutlined: false,
-      paymentUrl: 'https://buy.stripe.com/test_dR6cOc4vu1pt5xe7su?prefilled_email=malikumair112233%40gmail.com&client_reference_id=123'
+      priceId:ENTERPRISE_PLAN_ID || ''
     },
   ];
+
+  console.log(pricingPlans);
+  
   return (
     <Wrapper>
       <SectionTitle>Flexible pricing for agile teams</SectionTitle>
@@ -69,11 +76,11 @@ export default function PricingTablesSection() {
         {pricingPlans.map((plan) => (
           <PricingCard
             key={plan.title}
-            title={plan.title}
-            paymentUrl={plan.paymentUrl}
+            title={plan.title} 
             description={plan.description}
             benefits={plan.benefits}
             isOutlined={plan.isOutlined}
+            priceId={plan.priceId}
           >
             {plan.price}
             <span>/month</span>

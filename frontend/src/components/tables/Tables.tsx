@@ -15,9 +15,9 @@ interface TableData {
 interface TableProps {
   tableProps: TableData[];
 }
+ 
 
 const Tables: React.FC<TableProps> = ({ tableProps }) => {
-
   return (
      <div>
          {tableProps && 
