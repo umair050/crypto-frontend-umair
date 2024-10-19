@@ -16,7 +16,7 @@ blueprint = Blueprint('payment', __name__)
 
 @blueprint.route('/webhook', methods=['POST'])
 def webhook():
-    payload = request.data
+    payload = request.get_data(as_text=True)
     sig_header = request.headers.get('STRIPE_SIGNATURE')  # Safely get header
     if not sig_header:
         return jsonify({'error': 'Missing signature header'}), 400
@@ -24,7 +24,7 @@ def webhook():
     try:
         print("Received payload:", payload)  # Debug output
         print("Received signature:", sig_header)  # Debug output
-        print("Payment Webhook Security : ", endpoint_secret)
+        print("Payment Webhook Security:", endpoint_secret)
         
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
