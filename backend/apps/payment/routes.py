@@ -18,8 +18,8 @@ blueprint = Blueprint('payment', __name__)
 def webhook():
     payload = request.data
     sig_header = request.headers['STRIPE_SIGNATURE']
-    print("STRIPE SIGN", request.headers['STRIPE_SIGNATURE'])
     try:
+        print("Payment Webhook Security : ",endpoint_secret )
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
