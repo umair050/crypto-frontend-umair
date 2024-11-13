@@ -2,13 +2,14 @@
 import styled from "styled-components";
 import Page from "@/components/Page";
 import { media } from "@/utils/media";
-import InformationSection from "@/views/PrivacyPolicyPage/InformationSection";
+import InformationSection from "@/views/AboutUsPage/InformationSection";
 
-export default function PrivacyPolicyPage() {
+export default function AboutUsPage() {
   return (
     <Page
-      title="Privacy Policy"
-      description="A privacy policy detailing how StrataMind collects, uses, shares, and safeguards personal information on its platform."
+      title="About Us"
+      description="
+StrataMind delivers real-time crypto insights from social media signals."
     >
       <ContactContainer>
         <InformationSection />
