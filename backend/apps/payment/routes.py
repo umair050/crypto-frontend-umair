@@ -16,16 +16,10 @@ blueprint = Blueprint('payment', __name__)
 
 @blueprint.route('/webhook', methods=['POST'])
 def webhook():
-    payload = request.get_data(as_text=True)
-    sig_header = request.headers.get('STRIPE_SIGNATURE')  # Safely get header
-    if not sig_header:
-        return jsonify({'error': 'Missing signature header'}), 400
-    
+    payload = request.data
+    sig_header = request.headers['STRIPE_SIGNATURE']
+    print("STRIPE SIGN", request.headers['STRIPE_SIGNATURE'])
     try:
-        print("Received payload:", payload)  # Debug output
-        print("Received signature:", sig_header)  # Debug output
-        print("Payment Webhook Security:", endpoint_secret)
-        
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
@@ -33,11 +27,11 @@ def webhook():
     except ValueError as e:
         print(f"ValueError: {str(e)}")  # Debug output
         return jsonify({'error': 'Invalid payload'}), 400
-    except stripe.error.SignatureVerificationError as e:
+    except SignatureVerificationError as e:
         print(f"SignatureVerificationError: {str(e)}")  # Debug output
         return jsonify({'error': 'Invalid signature'}), 400
     except Exception as e:
-        print(f"Unhandled exception: {str(e)}")  # Debug output
+        print(f"Unhandled exception: {str(e)}")  # Catch other exceptions
         return jsonify({'error': 'An error occurred'}), 500
 
     # Handle subscription events
@@ -52,7 +46,6 @@ def webhook():
         handle_subscription_canceled(subscription)
 
     return jsonify(success=True)
-
 
 
 def handle_subscription_created(subscription):
